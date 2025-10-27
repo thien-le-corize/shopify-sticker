@@ -104,45 +104,24 @@
                                     <div class="cart-header-item cart-header-remove"></div>
                                 </div>
                                 <div class="cart-list">
-                                   {%- for item in cart.items -%}
-                                        {% liquid
-                                            assign group_code = item.properties['_gpo_product_group']
-                                            assign parent_code = item.properties['_gpo_parent_product_group']
-                                        %}
-
-                                        {% assign variant_child = "" %}
-                                        {% if group_code and parent_code == blank %}
-                                        {% assign variant_child_list = "" %}
-                                        {% for sub_item in cart.items %}
-                                            {% assign sub_parent_code = sub_item.properties['_gpo_parent_product_group'] %}
-                                            {% if sub_parent_code == group_code %}
-                                            {% capture variant_child_list %}{{ variant_child_list }}||{{ sub_item.key }}{% endcapture %}
-                                            {% endif %}
-                                        {% endfor %}
-                                        {% assign variant_child = variant_child_list | split: '||' %}
-                                        {% endif %}
-
+                                    {%- for item in cart.items -%}
                                         {% liquid
                                             assign has_qty_rules = false
                                             if item.variant.quantity_rule.increment > 1 or item.variant.quantity_rule.min > 1 or item.variant.quantity_rule.max != null
-                                            assign has_qty_rules = true
+                                                assign has_qty_rules = true
                                             endif
-
                                             assign has_vol_pricing = false
                                             if item.variant.quantity_price_breaks.size > 0
-                                            assign has_vol_pricing = true
+                                                assign has_vol_pricing = true
                                             endif
-
                                             if settings.discount_calculator_free_shipping == 'setup_shipping_delivery'
-                                            if item.original_price != item.final_price
-                                                assign price_gift_card = item.final_price
-                                            else 
-                                                assign price_gift_card = item.original_price
-                                            endif 
+                                                if item.original_price != item.final_price
+                                                    assign price_gift_card = item.final_price
+                                                else 
+                                                    assign price_gift_card = item.original_price
+                                                endif 
                                             endif
                                         %}
-                                        {% unless item.properties['_gpo_parent_product_group'] %}
-                                            <div class="cart-item-wp">
                                         <div class="cart-item" data-item-row {% if item.product.variants.size != 0 %}{% unless item.variant.title contains 'Default' %}data-cart-edit-productItem{% endunless %}{% endif %} data-line="{{ item.key }}"{% if settings.discount_calculator_free_shipping == 'setup_shipping_delivery' and item.product.gift_card? %} data-price-gift-card="{{ price_gift_card | times: item.quantity }}"{% endif %}>
                                             <div class="cart-item-block cart-item-info">
                                                 <div class="cart-item-wrapper">
@@ -246,7 +225,7 @@
                                                         </div>
                                                         <div class="cart-item-blocks small-screen-visible">
                                                             <div class="cart-item-blocks-left">
-                                                                <div class="cart-item-block cart-item-quantity small-screen-visible {% if item.properties['_gpo_product_group'] %}hidden{% endif %}">
+                                                                <div class="cart-item-block cart-item-quantity small-screen-visible">
                                                                     {%- if has_qty_rules or has_vol_pricing -%}
                                                                     <quantity-popover class="quantity-popover-container">
                                                                     {%- endif -%}
@@ -474,66 +453,6 @@
                                                 <a class="cart-remove" href="javascript:void(0)" data-cart-remove data-cart-remove-id="{{ item.id }}" data-line="{{ item.key }}" data-index="{{ item.index | plus: 1 }}" aria-label="{{ 'sections.cart.remove_title' | t: title: item.title }}">{% render 'icon-close' %}</a>
                                             </div>
                                         </div>
-                                            {% comment %}
-                                                Start Custom template variant child
-                                            {% endcomment %}
-                                            {% if variant_child.size > 0 %}
-                                                {% for key in variant_child %}
-                                                    {% assign child_item = cart.items | where: "key", key | first %}
-                                                    {% if child_item %}
-                                                    <div class="cart-item cart-item-variant-child" 
-                                                        data-item-row 
-                                                        data-cart-edit-productitem 
-                                                        data-line="{{ child_item.key }}">
-                                                        <div class="cart-item-block cart-item-info">
-                                                        <div class="cart-item-wrapper">
-                                                            <div class="cart-item-block-left"></div>
-                                                            <div class="cart-item-block-right">
-                                                            <h4 class="cart-item-name">
-                                                                <a href="{{ child_item.url }}" class="link link-underline">
-                                                                <span class="text">{{ child_item.product.title }}</span>
-                                                                </a>
-                                                            </h4>
-
-                                                            <div class="cart-item-option">
-                                                                <span class="cart-item-variant">{{ child_item.variant.title }}</span>
-                                                            </div>
-
-                                                            <dl class="cart-item-properties definitionList"></dl>
-
-                                                            <div class="cart-item-block cart-item-price small-screen-visible">
-                                                                <div class="cart-item__price-wrapper">
-                                                                <span class="price price--end" data-item-final-price-display>
-                                                                    {{ child_item.final_line_price | money }}
-                                                                </span>
-                                                                </div>
-                                                            </div>
-                                                            </div>
-                                                        </div>
-                                                        </div>
-
-                                                        <div class="cart-item-block cart-item-price">
-                                                        <div class="cart-item__price-wrapper">
-                                                            <span class="price price--end" data-item-final-price-display>
-                                                            {{ child_item.final_price | money }}
-                                                            </span>
-                                                        </div>
-                                                        </div>
-
-                                                        <div class="cart-item-block cart-item-total" data-price="{{ child_item.final_line_price }}">
-                                                        <span class="cart-item-value" data-item-price-with-quantity-display>
-                                                            {{ child_item.final_line_price | money }}
-                                                        </span>
-                                                        </div>
-                                                    </div>
-                                                    {% endif %}
-                                                {% endfor %}
-                                            {% endif %}
-                                             {% comment %}
-                                                End Custom template variant child
-                                            {% endcomment %}
-                                        </div>
-                                        {%  endunless %}
                                     {%- endfor -%}
                                 </div>
                             </div>
@@ -713,20 +632,8 @@
 <style type="text/css" media="screen">
     #CartSection-{{ section.id }} .cart-container {padding-top: {{ padding_top }};padding-bottom: {{ padding_bottom }}}
     #CartSection-{{ section.id }} .cart-container.container-full {padding-left: {{ side_padding_full_width }};padding-right: {{ side_padding_full_width }}}
-    .cart-item {border: 0px;}
-    .cart-item-wp{ border: 1px solid #e6e6e6; margin-bottom: 20px}
-    .cart-item-variant-child {border: 0px; padding-top: 0px;
-    padding-bottom: 10px; border-bottom: 1px solid #e6e6e6;}
-    .cart-total-grandtotal {border-top:0px}
-    .definitionList-key {font-weight: 500 !important;
-    color: #000 !important;}
-    .cart-item-wp .cart-item-variant-child:last-child { border-bottom: 0px }
     @media (max-width: 1024px) {#CartSection-{{ section.id }} .cart-container {padding-top: {{ padding_top_tablet }};padding-bottom: {{ padding_bottom_tablet }}}}
     @media (max-width: 550px) {#CartSection-{{ section.id }} .cart-container {padding-top: {{ padding_top_mobile }};padding-bottom: {{ padding_bottom_mobile }}}}
-    @media (max-width: 550px) {.cart-remove{position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%)}}
 </style>
 <script src="{{ 'cart.js' | asset_url }}" defer="defer"></script>
 {% schema %}
